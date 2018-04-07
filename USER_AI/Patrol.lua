@@ -5,7 +5,7 @@
 -- (AAI_CIRC_Y and AAI_CIRC_X array) and don't forget to update
 -- AAI_CIRC_MAXSTEP if you add or remove a step!
 
-AAI_CIRC_RADIUS         = 4
+AAI_CIRC_RADIUS         = 2
 AAI_NORTH               = AAI_CIRC_RADIUS
 AAI_SOUTH               = -AAI_CIRC_RADIUS
 AAI_EAST                = -AAI_CIRC_RADIUS

@@ -438,7 +438,8 @@ function OnIDLE_ST()
 		end
 	end
 
-	if (ANTI_AFK_MODE ~= true) then
+	-- MEUH if (ANTI_AFK_MODE ~= true) then
+	if CurrTime - StartupTime > 1100 then
 		if(HomunType == LIF  or HomunType == LIF_H
 		or     HomunType == LIF2 or HomunType == LIF_H2
 		or HomunS == true and OldHomunType == LIF) then
@@ -448,7 +449,7 @@ function OnIDLE_ST()
 	--]]
 
 	-- Is there a new target? -> chase_st
-	if CurrTime - StartupTime > 600 then
+	if CurrTime - StartupTime > 300 then
 		local NextTarget = GetMyNextTarget(HomunHPPerc)
 		if NextTarget ~=0 then
 			isCircling = false
@@ -671,13 +672,6 @@ function OnCHASE_ST()
 			end
 		end
 	end
-	-- Alchemist long range attack
-	if (BOLTS_ON_CHASE_ST == true) and (GetDistance2(MyEnemy, OwnerID) <= 9) and (AST.SkillID > 5) and (HTact.Alche >= 0) then
-		if DoSkill_AutoAttack(AST.SkillID) then
-			LastLRAtkTime = CurrTime
-			LastLRAtkID = MyEnemy
-		end
-	end
 
 	-- Am I in close combat position? -> attack_st
 	if (math.abs(Ex - MyX) <= 1) and (math.abs(Ey - MyY) <= 1) then
@@ -749,16 +743,6 @@ function OnATTACK_ST()
 	local EnemyTarget = GetV(V_TARGET, MyEnemy)
 
    local CurrTime = GetTick()
-
-	-- Heal the homunculus with AAP, if he/she is in danger
-	CanDoAAANow = true
-	if HomunHPPerc <= AAP.HP_Perc then
-		if (AAP.Mode == 2) or (AAP.Mode == 3) or (AAP.Mode == 4) then
-			DoSkill_AAP(HomunHP)
-			HomunHPPerc = (HomunHP / HomunMaxHP) * 100
-			CanDoAAANow = false
-		end
-	end
 
 	-- Survival Instinct
 	if ((EnemyTarget == MyID) and (HomunHPPerc < HP_PERC_DANGER))
@@ -905,28 +889,16 @@ function OnEVADE_ST()
 	elseif(HomunType == LIF  or HomunType == LIF_H
 	or HomunType == LIF2 or HomunType == LIF_H2
 	or HomunS == true and OldHomunType == LIF) then
-		DoSkill(AS_LIF_ESCP, MyID) -- Lif: Urgent Escape
+		DoSkill(AS_LIF_ESCP, MyID) -- MEUH :: Lif: Urgent Escape
 	elseif(HomunType == VANILMIRTH  or HomunType == VANILMIRTH_H
 	or HomunType == VANILMIRTH2 or HomunType == VANILMIRTH_H2
 	or HomunS == true and OldHomunType == VANILMIRTH) then
 		DoSkill(AS_VAN_CAPR, MyEnemy) -- Vani: Caprice (long range)
-		-- if GetV(V_HP, OwnerID) <= AAA_MinHP then
-		-- 	DoSkill(AS_VAN_BLES, OwnerID) -- [...] it seems disabled for AIs
-		-- end
-	end
-	CanDoAAANow = true
-	if (HomunHPPerc <= AAP.HP_Perc) then
-		if (AAP.Mode == 1) or (AAP.Mode == 3) or (AAP.Mode == 4) then
-			CanDoAAANow = false
-			if GetTick() > AAA_TimeOut then
-				DoSkill_AAP(HomunHP)
-				HomunHPPerc = (HomunHP / HomunMaxHP) * 100
-			end
-		end
 	end
 
 	------- Evading maneuvres ---------------------
 	CircleAroundTarget(OwnerID)
+	-- MEUH :: ADD
 	CheckForAutoAtk()
 	return
 end
@@ -938,14 +910,6 @@ function OnBUGPOSI_ST()
 	local HomunMaxHP	= GetV(V_MAXHP, MyID)
 	local HomunHPPerc = (HomunHP / HomunMaxHP) * 100
    local CurrTime = GetTick()
-
-	-- Heal the homunculus with AAP, if he/she is in danger
-	CanDoAAANow = true
-	if HomunHPPerc <= AAP.HP_Perc then
-		DoSkill_AAP(HomunHP)
-		HomunHPPerc = (HomunHP / HomunMaxHP) * 100
-		CanDoAAANow = false
-	end
 
 	local CurrTime = GetTick()
 	MoveToOwner(MyID)
@@ -1466,10 +1430,6 @@ function DoCombat()
 			or HomunS == true and OldHomunType == VANILMIRTH) then
 			--------------------------------------------
 
-				-- if ((GetV(V_HP, OwnerID) / GetV(V_MAXHP, OwnerID)) * 100 <= AAP.HP_Perc) then
-				-- 	DoSkill(AS_VAN_BLES, OwnerID) -- [...] it seems disabled for AIs
-				-- end
-
 				if CanDoAtkSkillsNow() then -- Caprice -- ##### AGGRESSIVE SKILL #####
 					if DoSkill(AS_VAN_CAPR, MyEnemy) then
 						AtkSkillDoneCount = AtkSkillDoneCount + 1
@@ -1492,23 +1452,7 @@ end
 --------------------------------------------------
 function CheckForAutoAtk()
 --------------------------------------------------
-	-- Alchemist auto attacks ---------------------
-	-- Cart Revolution will be engaged if there are 2 or more enemy close to the owner
-	local NOE = CountEnemiesCloseToOwner() -- Near Owner Enemies
-	-- Log(string.format("Enemies close to owner: %d", NOE))
-	-- if (GetTick() - AtkStartTime > 500) then
-		if NOE > 0 then
-			if (ACR.MinEnemies > 0 and NOE >= ACR.MinEnemies) then
-				DoSkill_AutoAttack(ACR.SkillID)
-			else
-				if (AST.SkillID > 0) and (HTact.Alche >= 0) then DoSkill_AutoAttack(AST.SkillID) end
-			end
-		else
-			if (GetDistance2(MyEnemy, OwnerID) <= 9) and (AST.SkillID > 5) and (HTact.Alche >= 0) then
-				DoSkill_AutoAttack(AST.SkillID) -- long range attack
-			end
-		end
-	-- end
+	-- MEUH :: Je peut faire un truc potentiellement
 end
 
 --------------------------------------------------
@@ -1580,133 +1524,6 @@ function DoSkill(Skill, Target)
 			CastDelayEnd = CurrTime + 1000
 			result = true
 			MySkill = 0
-		end
-	end
-	return result
-end
-
---------------------------------------------------
-function DoSkill_AAP(CurrHPVar)
---------------------------------------------------
-	if GetDistance2(MyID, OwnerID) > 9 then
-		return
-	end
-
-	local CurrTime = GetTick()
-
-	-- wait until AAP delay ends
-	if AAA_Engaged then -- if an AAA skill was just casted, wait for a little
-		if (GetTick() > AAA_TimeOut) then
-			AAA_Engaged = false
-		end
-
-	else -- it's the right time to cast AAP
-
-		-- make sure that it is not the first AAP since initialization
-		-- and that not too much time is passed since last AAP
-		if (AAP.OldHP > 0) and (CurrTime < AAA_TimeOut + 500) then
-
-			if CAN_DETECT_NOPOT == true then
-
-				-- if HPs are still the same or less, we assume it was a failure
-				if CurrHPVar <= AAP.OldHP then
-   	         --[[
-					-- maybe there were too many enemies and AAP was just unsufficient:
-					-- so whe count how many enemies are hitting the homunculus
-					-- [...] easy monsters can do 1 dmg: it's hard to figure it out
-					local actors = GetActors()
-					local aggr = 0
-					for i,v in ipairs(actors) do
-						if GetV(V_MOTION, v) ~= MOTION_DEAD then
-							if (v ~= OwnerID) and (v ~= MyID) then
-								if GetV(V_TARGET, v) == MyID then
-									aggr = aggr + 1
-								end
-							end
-						end
-					end
-					--]]
-					AAP.Failures = AAP.Failures + 1
-					Log(string.format("AAP: failure #%d detected", AAP.Failures))
-					if AAP.Failures >= AAP.MaxAttempts then
-						AAP.Mode = 0
-						Log("AAP: out of potion detected. AAP disabled")
-					end
-
-				-- if HPs have been increased, it was a success (unless it was natural regen [...])
-				elseif CurrHPVar > AAP.OldHP + AAP.MinInc then
-					AAP.Failures = 0
-					Log("AAP: HP increased, it seems it worked")
-				else
-					Log("AAP: HP increased, but it could be nat. regen.")
-				end
-
-			end
-
-		else
-			AAP.Failures = 0
-			Log("AAP: first time or too much time elapsed to compare HPs")
-		end
-
-		if AAP.Mode > 0 then
-			AAP.OldHP = CurrHPVar
-			MySkill = AAP.SkillID
-			MySkillLevel = AAP.Level
-			AAA_TimeOut = CurrTime + AAP.HowLast
-			AAA_Engaged = true
-			SkillObject(MyID, MySkillLevel, MySkill, MyID)
-			MySkill = 0
-			Log("AAP: SkillObject() called")
-		end
-	end
-
-end
-
---------------------------------------------------
-function DoSkill_AutoAttack(SkillID)
---------------------------------------------------
-	local OwnerSP = GetV(V_SP, OwnerID)
-	local OwnerHP = GetV(V_HP, OwnerID)
-	local result = false -- it returns true if SkillObject has been called
-
-	if AAA_Engaged then -- if an AAA skill was just casted, wait for a little
-		if (GetTick() > AAA_TimeOut) then
-			AAA_Engaged = false
-		end
-	else -- else it is the time to cast it
-		if (OwnerHP > AAA_MinHP) and (OwnerHP < AAA_MaxHP) then
-			if ( (SkillID ~= ACR.SkillID) and (OwnerSP >= AST.MinSP) )
-			or ( (SkillID == ACR.SkillID) and (OwnerSP >= ACR.MinSP) )
-			then
-
-				local EnemyType = GetV(V_HOMUNTYPE, MyEnemy)
-				if (CanDoAAANow == true) and (EnemyType < 1078 or EnemyType > 1085) then -- don't waste SP on plants and mushrooms
-
-					local ExtraDelay = 0
-					if SkillID == ACR.SkillID then -- it not Cart Revo.
-						MySkillLevel = 1
-					else
-						if HTact.Alche == 0 then
-							MySkillLevel = AST.Level
-						else
-							MySkillLevel = HTact.Alche
-						end
-						if (SkillID == WBS_FIRE) or (SkillID == WBS_ICE) then
-							ExtraDelay = ExtraDelay + DELAY_AAA_BOLT -- add more delay for fire/ice bolts (they have some cast time)
-						end
-					end
-
-					AAA_TimeOut = GetTick() + DELAY_AAA + ExtraDelay
-					AAA_Engaged = true
-
-					MySkill = SkillID
-					SkillObject(MyID, MySkillLevel, MySkill, MyEnemy)
-					result = true
-					Log(string.format("Done autoattack skill %d on enemy %d, type %d", SkillID, MyEnemy, EnemyType))
-					MySkill = 0
-				end
-
-			end
 		end
 	end
 	return result
